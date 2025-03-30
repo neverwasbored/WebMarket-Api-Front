@@ -1,3 +1,18 @@
+main page:
+![Alt text](https://imgur.com/CfryxDk)
+
+product page:
+![Alt text](https://imgur.com/cccku8Q)
+
+cart page:
+![Alt text](https://imgur.com/T2tACA6)
+
+Checkout page:
+![Alt text](https://imgur.com/tcOeuxL)
+
+Profile page:
+![Alt text](https://imgur.com/6lLxZCd)
+
 🛒 Интернет-магазин: Frontend + Backend на FastAPI
 Полноценное веб-приложение интернет-магазина с раздельной архитектурой:
 
@@ -18,8 +33,8 @@
 
 Поддержка CORS и credentials: 'include' для авторизации с фронта
 
-🌐 Frontend (Vanilla JS)
-Легкий, чистый JavaScript без фреймворков
+🌐 Frontend (React)
+React с помощью AI
 
 Поддержка авторизации через JWT в куках
 
