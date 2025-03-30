@@ -1,10 +1,19 @@
-from fastapi import Request
+from fastapi import Depends, Request
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.session import async_session
+from db.models import User
 from app.core.jwt import verify_access_token
 
 
-def get_current_user(request: Request):
+async def get_session():
+    async with async_session() as session:
+        yield session
+
+
+async def get_current_user(request: Request, session: AsyncSession = Depends(get_session)):
     """Получает текущего пользователя из JWT-токена (если он есть)"""
     token = request.cookies.get("access_token")
     if not token:
@@ -14,9 +23,9 @@ def get_current_user(request: Request):
     if not payload:
         return None
 
-    return payload
+    user = await session.scalar(select(User).where(User.id == payload.get('id')))
 
+    if not user:
+        return None
 
-async def get_session():
-    async with async_session() as session:
-        yield session
+    return user

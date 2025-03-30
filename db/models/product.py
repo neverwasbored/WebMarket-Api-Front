@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, Numeric, DateTime, func
-
+from sqlalchemy.orm import relationship
 from db.base import Base
 
 
@@ -17,4 +17,10 @@ class Product(Base):
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now()
+    )
+
+    cart_items = relationship(
+        "CartItem",
+        back_populates="product",
+        cascade="all, delete-orphan"
     )

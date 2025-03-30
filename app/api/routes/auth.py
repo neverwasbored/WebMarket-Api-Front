@@ -18,7 +18,6 @@ router = APIRouter()
 
 @router.post('/register', response_model=APISuccessResponseData[AuthOutSchema])
 async def register(
-    response: Response,
     form_data: RegisterSchema = Depends(RegisterSchema.as_form),
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_user)
@@ -64,7 +63,7 @@ async def register(
 
     access_token = create_access_token(
         data={
-            "user_id": user.id,
+            "id": user.id,
             "username": user.username
         }
     )
@@ -74,7 +73,6 @@ async def register(
 
 @router.post('/login', response_model=APISuccessResponseData[AuthOutSchema])
 async def login(
-    response: Response,
     form_data: LoginSchema = Depends(LoginSchema.as_form),
     session: AsyncSession = Depends(get_session),
     current_user: User = Depends(get_current_user)
@@ -97,7 +95,7 @@ async def login(
 
     access_token = create_access_token(
         data={
-            "user_id": user.id,
+            "id": user.id,
             "username": user.username
         }
     )

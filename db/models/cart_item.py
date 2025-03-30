@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
-
 from db.base import Base
 
 
@@ -13,6 +12,10 @@ class CartItem(Base):
     quantity = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # Опциональные связи
     user = relationship("User", backref="cart_items")
-    product = relationship("Product", backref="cart_items")
+    product = relationship(
+        "Product",
+        back_populates="cart_items",
+        foreign_keys=[product_id],
+        overlaps="cart_items"
+    )

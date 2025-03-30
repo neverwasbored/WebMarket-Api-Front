@@ -39,7 +39,7 @@ async def add_to_cart(
         select(CartItem)
         .where(
             and_(
-                CartItem.user_id == current_user.get('user_id'),
+                CartItem.user_id == current_user.id,
                 CartItem.product_id == payload.product_id
             )
         )
@@ -60,7 +60,7 @@ async def add_to_cart(
             )
     else:
         cart_item = CartItem(
-            user_id=current_user.get('user_id'),
+            user_id=current_user.id,
             product_id=payload.product_id,
             quantity=payload.quantity
         )
@@ -83,7 +83,7 @@ async def get_cart(
 
     items = await session.scalars(
         select(CartItem)
-        .where(CartItem.user_id == current_user.get('user_id'))
+        .where(CartItem.user_id == current_user.id)
         .options(selectinload(CartItem.product))
     )
     items_list = items.all()
@@ -114,8 +114,7 @@ async def remove_from_cart(
         select(CartItem)
         .where(
             and_(
-                CartItem.user_id == current_user.get(
-                    'user_id'),
+                CartItem.user_id == current_user.id,
                 CartItem.product_id == product_id
             )
         )

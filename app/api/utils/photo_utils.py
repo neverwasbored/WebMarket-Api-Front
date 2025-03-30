@@ -33,13 +33,7 @@ async def convert_to_webp_async(file_path: str) -> str:
                 print(f"Не удалось удалить файл {file_path}: {e}")
 
         normalized_path = os.path.normpath(webp_path)
-        prefix = os.path.normpath("app/front")  # "app/front"
 
-        if normalized_path.startswith(prefix):
-            short_path = normalized_path[len(prefix)+1:]
-        else:
-            short_path = normalized_path
-
-        return short_path
+        return normalized_path.replace('file_storage', 'files')
 
     return await asyncio.get_event_loop().run_in_executor(None, convert)

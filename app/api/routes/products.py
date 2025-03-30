@@ -5,16 +5,17 @@ from dotenv import load_dotenv
 
 from fastapi import APIRouter, Depends, Query, status, HTTPException
 from fastapi.responses import JSONResponse
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.schemas.base_response import APISuccessResponse, APISuccessResponseData
+from db.models.rating import Rating
 from db.models.user import User
 from db.models.product import Product
 from app.api.schemas.products_schema import ProductListResponse, ProductOutSchema, ProductSchema
 from app.api.utils.photo_utils import validate_file_extension_async, convert_to_webp_async
 from app.dependencies import get_current_user, get_session
-from app.exceptions import NotAuthenticatedException
+from app.exceptions import Forbiden, NotAuthenticatedException
 
 
 router = APIRouter()
@@ -32,7 +33,7 @@ async def get_products(
         select(func.count())
         .select_from(Product)
     )
-    
+
     products = await session.scalars(
         select(Product)
         .offset(offset)
@@ -60,7 +61,6 @@ async def create_product(
     if not current_user:
         raise NotAuthenticatedException()
 
-    # Обработка фотографии
     load_dotenv()
     UPLOAD_DIR = os.getenv('UPLOAD_DIR')
 
@@ -140,3 +140,48 @@ async def get_product(
             }
         }
     )
+
+
+@router.delete('/{product_id}', response_model=APISuccessResponse)
+async def delete_product(
+    product_id: int,
+    session: AsyncSession = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    if not current_user:
+        raise NotAuthenticatedException()
+
+    product = await session.scalar(select(Product).where(Product.id == product_id))
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                'type': 'error',
+                'msg': 'Данный товар не найден.'
+            }
+        )
+
+    load_dotenv()
+    ADMIN_IDS = os.getenv('REACT_APP_ADMIN_IDS').split(',')
+
+    if str(current_user.id) not in ADMIN_IDS:
+        raise Forbiden()
+
+    await session.execute(
+        delete(Rating).where(Rating.product_id == product_id)
+    )
+
+    await session.delete(product)
+    try:
+        await session.commit()
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ошибка при удалении товара: {str(e)}"
+        )
+
+    return {
+        'type': 'success',
+        'msg': 'Товар успешно удалён!'
+    }
