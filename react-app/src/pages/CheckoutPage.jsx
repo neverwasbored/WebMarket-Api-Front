@@ -1,34 +1,58 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';  // Импортируем useNavigate для перенаправления
+import { API_BASE_URL } from '../config';
 import { useCart } from '../utils/CartContext';
 import '../styles.css';
 
 const CheckoutPage = () => {
+  const navigate = useNavigate();  // Используем useNavigate для перенаправления
   const { cartCounter, updateCart } = useCart();
-  const [address, setAddress] = useState('');  // Используем состояние для адреса
+  const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [orderSummary, setOrderSummary] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
 
-  // Обновим данные корзины и подсчитаем общую сумму
+  // Обновляем данные корзины, делая запрос к API
   useEffect(() => {
     const fetchCartData = async () => {
-      const cartItems = [
-        { name: 'Товар 1', quantity: 2, price: 500 },
-        { name: 'Товар 2', quantity: 1, price: 1500 },
-      ];
+      try {
+        const response = await fetch(`${API_BASE_URL}/cart/`, {
+          method: 'GET',
+          credentials: 'include', // если требуется передача cookie (например, для аутентификации)
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
 
-      const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      setOrderSummary(cartItems);
-      setTotalPrice(total);
+        if (!response.ok) {
+          // Выводим статус и текст ошибки для отладки
+          const errorText = await response.text();
+          console.error('Ошибка при запросе корзины:', response.status, errorText);
+          throw new Error(`Ошибка запроса: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.type === 'success' && result.data) {
+          // Вычисляем общую стоимость на основе цены товара и количества
+          const total = result.data.reduce((sum, item) => {
+            return sum + item.product.price * item.quantity;
+          }, 0);
+          setOrderSummary(result.data);
+          setTotalPrice(total);
+        } else {
+          console.error('Ошибка получения данных корзины:', result.msg);
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке корзины:', error);
+      }
     };
 
     fetchCartData();
   }, []);
 
-  // Функция для обновления адреса
   const handleAddressChange = (e) => {
-    console.log('Текущее значение адреса:', e.target.value); // Добавляем отладочную информацию
-    setAddress(e.target.value);  // Обновляем адрес в состоянии при изменении
+    console.log('Текущее значение адреса:', e.target.value);
+    setAddress(e.target.value);
   };
 
   const handleSubmit = (e) => {
@@ -45,8 +69,8 @@ const CheckoutPage = () => {
             <h2>Адрес доставки</h2>
             <input
               type="text"
-              value={address}  // Связываем инпут с состоянием address
-              onChange={handleAddressChange}  // Обновляем адрес при изменении
+              value={address}
+              onChange={handleAddressChange}
               placeholder="Введите адрес доставки"
               className="address-input"
               required
@@ -99,9 +123,19 @@ const CheckoutPage = () => {
             <tbody>
               {orderSummary.map((item, index) => (
                 <tr key={index}>
-                  <td>{item.name.length > 15 ? `${item.name.slice(0, 15)}...` : item.name}</td>
+                  <td>
+                    {/* Добавляем ссылку на страницу товара */}
+                    <a
+                      href={`/product/${item.product.id}`}  // Ссылка на страницу товара
+                      className="cart-product-link"
+                    >
+                      {item.product.name.length > 15
+                        ? `${item.product.name.slice(0, 15)}...`
+                        : item.product.name}
+                    </a>
+                  </td>
                   <td>{item.quantity}</td>
-                  <td>{item.price * item.quantity} ₽</td>
+                  <td>{item.product.price * item.quantity} ₽</td>
                 </tr>
               ))}
             </tbody>
