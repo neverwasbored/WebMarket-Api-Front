@@ -1,17 +1,17 @@
 main page:
-![Alt text](https://imgur.com/CfryxDk)
+![Screenshot](https://imgur.com/CfryxDk)
 
 product page:
-![Alt text](https://imgur.com/cccku8Q)
+![Screenshot](https://imgur.com/cccku8Q)
 
 cart page:
-![Alt text](https://imgur.com/T2tACA6)
+![Screenshot](https://imgur.com/T2tACA6)
 
 Checkout page:
-![Alt text](https://imgur.com/tcOeuxL)
+![Screenshot](https://imgur.com/tcOeuxL)
 
 Profile page:
-![Alt text](https://imgur.com/6lLxZCd)
+![Screenshot](https://imgur.com/6lLxZCd)
 
 🛒 Интернет-магазин: Frontend + Backend на FastAPI
 Полноценное веб-приложение интернет-магазина с раздельной архитектурой:
